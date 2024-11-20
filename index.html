@@ -274,7 +274,7 @@
         const rightImage = document.getElementById("rightImage");
         leftImage.onload = rightImage.onload = () => {
           countdownDisplay.style.display = "flex"; // Toon de timer
-          let countdown = 3;
+          let countdown = 3; // Verander de tijd naar 3 seconden voor de afbeeldingen
           countdownDisplay.textContent = countdown;
 
           // Toon de labels voor L en R
@@ -288,11 +288,40 @@
             countdownDisplay.textContent = countdown;
             if (countdown <= 0) {
               clearInterval(countdownTimer);
-              currentPairIndex++;
-              showNextImagePair(); // Toon het volgende paar
+              currentPairIndex++; // Verhoog de index
+              hideImagesAndShowQuestion(); // Verberg de afbeeldingen en toon de vraag
             }
           }, 1000);
         };
+      }
+
+      // Functie om de afbeeldingen en labels te verbergen en de vraag te tonen
+      function hideImagesAndShowQuestion() {
+        // Verberg de afbeeldingen
+        document.getElementById("leftImage").style.display = "none";
+        document.getElementById("rightImage").style.display = "none";
+
+        // Verberg de labels
+        document.querySelectorAll(".label").forEach((label) => {
+          label.style.display = "none"; // Verberg de labels
+        });
+
+        // Toon de vraag
+        const questionElement = document.createElement("div");
+        questionElement.textContent = "Which square showed the most dots: A or B?";
+        questionElement.style.fontSize = "24px";
+        questionElement.style.color = "white";
+        questionElement.style.textAlign = "center";
+        questionElement.style.marginTop = "20px";
+
+        // Voeg de vraag toe aan de overlay
+        overlay.appendChild(questionElement);
+
+        // Verberg de vraag na 3 seconden en laad het volgende paar
+        setTimeout(() => {
+          questionElement.remove(); // Verwijder de vraag
+          showNextImagePair(); // Toon het volgende paar
+        }, 3000);
       }
 
       function endSession() {

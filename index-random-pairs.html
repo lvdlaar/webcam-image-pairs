@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Webcam Opname en Willekeurige Afbeeldingsparen</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Gantari:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet" />
+    <style>
+      body {
+        font-family: "Gantari", sans-serif;
+        font-optical-sizing: auto;
+        font-weight: 300;
+        font-style: normal;
+      }
+
+      #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: none; /* Begin verborgen */
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 999; /* Zorg ervoor dat het bovenop andere elementen staat */
+      }
+
+      #countdown {
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold; /* Vet lettertype */
+      }
+
+      .label {
+        font-weight: bold; /* Vet voor L en R */
+        color: white; /* Wit voor de labels */
+        display: none; /* Start hidden */
+        margin-bottom: 8px; /* Ruimte tussen label en afbeelding */
+      }
+
+      #imagePair {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      #leftImage,
+      #rightImage {
+        max-width: 512px; /* Zorg ervoor dat de afbeeldingen 512px breed zijn */
+        max-height: 512px; /* Zorg ervoor dat de afbeeldingen 512px hoog zijn */
+        margin: 0 10px; /* Ruimte tussen de afbeeldingen */
+      }
+
+      #closeOverlay {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: transparent;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+      }
+
+      #uploadedVideo {
+        display: none;
+        margin-top: 20px;
+        text-align: center; /* Centreer video */
+      }
+
+      #recordedVideo {
+        max-width: 400px; /* Verminder de breedte van de video */
+        width: 100%; /* Laat de video responsief zijn */
+      }
+
+      #sessionEnd {
+        text-align: center; /* Centreer einde sessie bericht */
+        font-size: 24px; /* Grotere tekst */
+        margin-top: 20px; /* Ruimte boven de tekst */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container my-5">
+      <h1 class="text-center mb-4">Beoordeel de willekeurige afbeeldingparen</h1>
+
+      <div class="row justify-content-center">
+        <div class="col-md-4 mb-4">
+          <div class="card">
+            <div class="card-body position-relative">
+              <video id="video" class="w-100 rounded" autoplay muted style="max-height: 200px"></video>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-md-4 d-flex justify-content-around mb-4">
+          <button id="startRecording" class="btn btn-primary w-45">Start opname</button>
+          <button id="stopRecording" class="btn btn-danger w-45" disabled>Stop opname</button>
+        </div>
+      </div>
+
+      <div id="overlay">
+        <!-- Semi transparante overlay -->
+        <button id="closeOverlay" aria-label="Sluiten">&times;</button>
+        <div id="countdown">5</div>
+        <!-- Countdown timer hier -->
+        <div id="imagePair">
+          <div class="image-container text-center">
+            <div class="label">L</div>
+            <!-- Label boven de afbeelding -->
+            <img id="leftImage" src="" class="rounded border" />
+          </div>
+          <div class="image-container text-center">
+            <div class="label">R</div>
+            <!-- Label boven de afbeelding -->
+            <img id="rightImage" src="" class="rounded border" />
+          </div>
+        </div>
+      </div>
+
+      <p id="sessionEnd" class="text-success" style="display: none">Einde sessie!</p>
+      <div id="uploadedVideo" style="display: none">
+        <h5 class="mt-4">Opname:</h5>
+        <video id="recordedVideo" controls class="rounded"></video>
+        <!-- Responsieve video -->
+      </div>
+    </div>
+
+    <script>
+      const video = document.getElementById("video");
+      const startButton = document.getElementById("startRecording");
+      const stopButton = document.getElementById("stopRecording");
+      const overlay = document.getElementById("overlay");
+      const countdownDisplay = document.getElementById("countdown");
+      const sessionEndMessage = document.getElementById("sessionEnd");
+      const uploadedVideo = document.getElementById("uploadedVideo");
+      const recordedVideo = document.getElementById("recordedVideo");
+
+      let mediaRecorder;
+      let recordedChunks = [];
+      let currentPairIndex = 0;
+      let countdownTimer;
+
+      // Aantallen dots voor beschikbare afbeeldingen
+      const availableImages = [10, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+      const imagePairs = [];
+
+      // Functie om de basispad te verkrijgen
+      function getBasePath() {
+        return "images"; // Pas dit aan als de map anders is
+      }
+
+      // Genereer 5 willekeurige paren
+      function generateRandomPairs() {
+        for (let i = 0; i < 5; i++) {
+          const leftDots = availableImages[Math.floor(Math.random() * availableImages.length)];
+          let rightDots;
+          do {
+            rightDots = availableImages[Math.floor(Math.random() * availableImages.length)];
+          } while (rightDots === leftDots);
+          imagePairs.push({
+            left: `${getBasePath()}/${leftDots}-dots-512x512.svg`,
+            right: `${getBasePath()}/${rightDots}-dots-512x512.svg`,
+          });
+        }
+      }
+
+      generateRandomPairs();
+      console.log(imagePairs);
+
+      // Vraag toestemming voor zowel video als audio, maar demp audio-output
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then((stream) => {
+          video.srcObject = stream;
+          video.muted = true;
+          mediaRecorder = new MediaRecorder(stream);
+
+          startButton.onclick = () => {
+            recordedChunks = [];
+            mediaRecorder.start();
+            startButton.disabled = true;
+            stopButton.disabled = false;
+            overlay.style.display = "flex"; // Toon de overlay
+            startImagePairSession();
+          };
+
+          stopButton.onclick = () => {
+            mediaRecorder.stop(); // Stop de opname
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            clearInterval(countdownTimer);
+            countdownDisplay.style.display = "none"; // Verberg de timer als de opname stopt
+            sessionEndMessage.style.display = "none"; // Verberg sessie eind bericht
+          };
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              recordedChunks.push(event.data);
+            }
+          };
+
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: "video/webm" });
+            uploadRecording(blob);
+          };
+        })
+        .catch((error) => {
+          let errorMessage;
+          if (error.name === "NotAllowedError") {
+            errorMessage = "Toegang tot de webcam is geweigerd. Controleer je browserinstellingen om toegang toe te staan.";
+          } else if (error.name === "NotFoundError") {
+            errorMessage = "Er is geen webcam gevonden. Sluit een webcam aan en probeer opnieuw.";
+          } else {
+            errorMessage = "Er is een probleem met toegang tot de webcam: " + error.message;
+          }
+
+          // Toon de foutmelding aan de gebruiker
+          alert(errorMessage);
+          console.error("Toegang tot webcam geweigerd of fout opgetreden:", error);
+        });
+
+      function startImagePairSession() {
+        currentPairIndex = 0;
+        showNextImagePair();
+      }
+
+      function showNextImagePair() {
+        if (currentPairIndex >= imagePairs.length) {
+          endSession();
+          return;
+        }
+
+        const currentPair = imagePairs[currentPairIndex];
+        document.getElementById("leftImage").src = currentPair.left;
+        document.getElementById("rightImage").src = currentPair.right;
+
+        // Controleer of de afbeeldingen zijn geladen voordat we ze weergeven
+        const leftImage = document.getElementById("leftImage");
+        const rightImage = document.getElementById("rightImage");
+        leftImage.onload = rightImage.onload = () => {
+          countdownDisplay.style.display = "flex"; // Toon de timer
+          let countdown = 5;
+          countdownDisplay.textContent = countdown;
+
+          // Toon de labels voor L en R
+          document.querySelectorAll(".label").forEach((label) => {
+            label.style.display = "block"; // Maak de labels zichtbaar
+          });
+
+          clearInterval(countdownTimer); // Zorg ervoor dat er geen dubbele timers zijn
+          countdownTimer = setInterval(() => {
+            countdown--;
+            countdownDisplay.textContent = countdown;
+            if (countdown <= 0) {
+              clearInterval(countdownTimer);
+              currentPairIndex++;
+              showNextImagePair(); // Toon het volgende paar
+            }
+          }, 1000);
+        };
+      }
+
+      function endSession() {
+        mediaRecorder.stop(); // Stop opname aan het einde van de sessie
+        overlay.style.display = "none"; // Verberg overlay
+        sessionEndMessage.style.display = "block"; // Toon sessie eind bericht
+      }
+
+      function uploadRecording(blob) {
+        const formData = new FormData();
+        formData.append("video", blob, `opname_${Date.now()}.webm`);
+
+        fetch("upload.php", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => {
+            // Controleer of de respons een geldige JSON is
+            if (!response.ok) {
+              throw new Error("Netwerk reactie was niet ok.");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            uploadedVideo.style.display = "block";
+            recordedVideo.src = URL.createObjectURL(blob);
+            recordedVideo.play();
+          })
+          .catch((error) => {
+            console.error("Fout bij uploaden opname:", error);
+          });
+      }
+
+      document.getElementById("closeOverlay").onclick = () => {
+        overlay.style.display = "none"; // Sluit overlay
+        stopButton.click(); // Stop opname
+      };
+    </script>
+  </body>
+</html>

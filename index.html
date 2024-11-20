@@ -282,13 +282,16 @@
             label.style.display = "block"; // Maak de labels zichtbaar
           });
 
+          countdownDisplay.textContent = countdown; // Toon direct de waarde van de countdown
+
           clearInterval(countdownTimer); // Zorg ervoor dat er geen dubbele timers zijn
           countdownTimer = setInterval(() => {
             countdown--;
-            countdownDisplay.textContent = countdown;
+            countdownDisplay.textContent = countdown; // Update de timer elke seconde
             if (countdown <= 0) {
-              clearInterval(countdownTimer);
+              clearInterval(countdownTimer); // Stop de timer als hij 0 bereikt
               currentPairIndex++; // Verhoog de index
+              console.log("Current Pair Index:", currentPairIndex);
               hideImagesAndShowQuestion(); // Verberg de afbeeldingen en toon de vraag
             }
           }, 1000);
@@ -316,6 +319,10 @@
 
         // Voeg de vraag toe aan de overlay
         overlay.appendChild(questionElement);
+
+        // Herstel de countdown naar 3 voor de volgende ronde
+        let countdown = 3;
+        countdownDisplay.textContent = countdown; // Toon direct de waarde
 
         // Verberg de vraag na 3 seconden en laad het volgende paar
         setTimeout(() => {

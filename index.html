@@ -167,24 +167,24 @@
       const predefinedPairs = [
         { left: "1-dots-512x512.svg", right: "1000-dots-512x512.svg" }, // Paar 1
         { left: "500-dots-512x512.svg", right: "10-dots-512x512.svg" }, // Paar 7
-        // { left: "970-dots-512x512.svg", right: "980-dots-512x512.svg" }, // Paar 14
-        // { left: "700-dots-512x512.svg", right: "60-dots-512x512.svg" }, // Paar 10
-        // { left: "970-dots-512x512.svg", right: "960-dots-512x512.svg" }, // Paar 20
-        // { left: "800-dots-512x512.svg", right: "20-dots-512x512.svg" }, // Paar 8
-        // { left: "999-dots-512x512.svg", right: "1000-dots-512x512.svg" }, // Paar 11
-        // { left: "980-dots-512x512.svg", right: "990-dots-512x512.svg" }, // Paar 13
-        // { left: "990-dots-512x512.svg", right: "980-dots-512x512.svg" }, // Paar 18
-        // { left: "1000-dots-512x512.svg", right: "1-dots-512x512.svg" }, // Paar 6
-        // { left: "999-dots-512x512.svg", right: "990-dots-512x512.svg" }, // Paar 17
-        // { left: "50-dots-512x512.svg", right: "900-dots-512x512.svg" }, // Paar 4
-        // { left: "10-dots-512x512.svg", right: "500-dots-512x512.svg" }, // Paar 2
-        // { left: "980-dots-512x512.svg", right: "970-dots-512x512.svg" }, // Paar 19
-        // { left: "1000-dots-512x512.svg", right: "999-dots-512x512.svg" }, // Paar 16
-        // { left: "960-dots-512x512.svg", right: "970-dots-512x512.svg" }, // Paar 15
-        // { left: "900-dots-512x512.svg", right: "50-dots-512x512.svg" }, // Paar 9
-        // { left: "60-dots-512x512.svg", right: "700-dots-512x512.svg" }, // Paar 5
-        // { left: "20-dots-512x512.svg", right: "800-dots-512x512.svg" }, // Paar 3
-        // { left: "990-dots-512x512.svg", right: "999-dots-512x512.svg" }, // Paar 12
+        { left: "970-dots-512x512.svg", right: "980-dots-512x512.svg" }, // Paar 14
+        { left: "700-dots-512x512.svg", right: "60-dots-512x512.svg" }, // Paar 10
+        { left: "970-dots-512x512.svg", right: "960-dots-512x512.svg" }, // Paar 20
+        { left: "800-dots-512x512.svg", right: "20-dots-512x512.svg" }, // Paar 8
+        { left: "999-dots-512x512.svg", right: "1000-dots-512x512.svg" }, // Paar 11
+        { left: "980-dots-512x512.svg", right: "990-dots-512x512.svg" }, // Paar 13
+        { left: "990-dots-512x512.svg", right: "980-dots-512x512.svg" }, // Paar 18
+        { left: "1000-dots-512x512.svg", right: "1-dots-512x512.svg" }, // Paar 6
+        { left: "999-dots-512x512.svg", right: "990-dots-512x512.svg" }, // Paar 17
+        { left: "50-dots-512x512.svg", right: "900-dots-512x512.svg" }, // Paar 4
+        { left: "10-dots-512x512.svg", right: "500-dots-512x512.svg" }, // Paar 2
+        { left: "980-dots-512x512.svg", right: "970-dots-512x512.svg" }, // Paar 19
+        { left: "1000-dots-512x512.svg", right: "999-dots-512x512.svg" }, // Paar 16
+        { left: "960-dots-512x512.svg", right: "970-dots-512x512.svg" }, // Paar 15
+        { left: "900-dots-512x512.svg", right: "50-dots-512x512.svg" }, // Paar 9
+        { left: "60-dots-512x512.svg", right: "700-dots-512x512.svg" }, // Paar 5
+        { left: "20-dots-512x512.svg", right: "800-dots-512x512.svg" }, // Paar 3
+        { left: "990-dots-512x512.svg", right: "999-dots-512x512.svg" }, // Paar 12
       ];
 
       // Genereer paren in de vaste volgorde
@@ -274,7 +274,7 @@
         const rightImage = document.getElementById("rightImage");
         leftImage.onload = rightImage.onload = () => {
           countdownDisplay.style.display = "flex"; // Toon de timer
-          let countdown = 3; // Verander de tijd naar 3 seconden voor de afbeeldingen
+          let countdown = 5;
           countdownDisplay.textContent = countdown;
 
           // Toon de labels voor L en R
@@ -282,53 +282,17 @@
             label.style.display = "block"; // Maak de labels zichtbaar
           });
 
-          countdownDisplay.textContent = countdown; // Toon direct de waarde van de countdown
-
           clearInterval(countdownTimer); // Zorg ervoor dat er geen dubbele timers zijn
           countdownTimer = setInterval(() => {
             countdown--;
-            countdownDisplay.textContent = countdown; // Update de timer elke seconde
+            countdownDisplay.textContent = countdown;
             if (countdown <= 0) {
-              clearInterval(countdownTimer); // Stop de timer als hij 0 bereikt
-              currentPairIndex++; // Verhoog de index
-              console.log("Current Pair Index:", currentPairIndex);
-              hideImagesAndShowQuestion(); // Verberg de afbeeldingen en toon de vraag
+              clearInterval(countdownTimer);
+              currentPairIndex++;
+              showNextImagePair(); // Toon het volgende paar
             }
           }, 1000);
         };
-      }
-
-      // Functie om de afbeeldingen en labels te verbergen en de vraag te tonen
-      function hideImagesAndShowQuestion() {
-        // Verberg de afbeeldingen
-        document.getElementById("leftImage").style.display = "none";
-        document.getElementById("rightImage").style.display = "none";
-
-        // Verberg de labels
-        document.querySelectorAll(".label").forEach((label) => {
-          label.style.display = "none"; // Verberg de labels
-        });
-
-        // Toon de vraag
-        const questionElement = document.createElement("div");
-        questionElement.textContent = "Which square showed the most dots: A or B?";
-        questionElement.style.fontSize = "24px";
-        questionElement.style.color = "white";
-        questionElement.style.textAlign = "center";
-        questionElement.style.marginTop = "20px";
-
-        // Voeg de vraag toe aan de overlay
-        overlay.appendChild(questionElement);
-
-        // Herstel de countdown naar 3 voor de volgende ronde
-        let countdown = 3;
-        countdownDisplay.textContent = countdown; // Toon direct de waarde
-
-        // Verberg de vraag na 3 seconden en laad het volgende paar
-        setTimeout(() => {
-          questionElement.remove(); // Verwijder de vraag
-          showNextImagePair(); // Toon het volgende paar
-        }, 3000);
       }
 
       function endSession() {

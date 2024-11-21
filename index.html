@@ -251,16 +251,16 @@
         .catch((error) => {
           let errorMessage;
           if (error.name === "NotAllowedError") {
-            errorMessage = "Toegang tot de webcam is geweigerd. Controleer je browserinstellingen om toegang toe te staan.";
+            errorMessage = "Access to the webcam was denied. Check your browser settings to allow access.";
           } else if (error.name === "NotFoundError") {
-            errorMessage = "Er is geen webcam gevonden. Sluit een webcam aan en probeer opnieuw.";
+            errorMessage = "No webcam was found. Connect a webcam and try again.";
           } else {
-            errorMessage = "Er is een probleem met toegang tot de webcam: " + error.message;
+            errorMessage = "There is a problem with accessing the webcam: " + error.message;
           }
 
           // Toon de foutmelding aan de gebruiker
           alert(errorMessage);
-          console.error("Toegang tot webcam geweigerd of fout opgetreden:", error);
+          console.error("Access to the webcam was denied or an error occurred:", error);
         });
 
       function startImagePairSession() {
@@ -283,7 +283,7 @@
         const rightImage = document.getElementById("rightImage");
         leftImage.onload = rightImage.onload = () => {
           countdownDisplay.style.display = "flex"; // Toon de timer
-          let countdown = 10;
+          let countdown = 5;
           countdownDisplay.textContent = countdown;
 
           // Toon de labels voor L en R
@@ -322,7 +322,7 @@
           .then((response) => {
             // Controleer of de respons een geldige JSON is
             if (!response.ok) {
-              throw new Error("Netwerk reactie was niet ok.");
+              throw new Error("Network response was not OK.");
             }
             return response.json();
           })
@@ -332,7 +332,7 @@
             recordedVideo.play();
           })
           .catch((error) => {
-            console.error("Fout bij uploaden opname:", error);
+            console.error("Error uploading recording:", error);
           });
       }
 

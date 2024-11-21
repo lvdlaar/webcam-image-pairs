@@ -202,6 +202,12 @@
       generateOrderedPairs();
       console.log(imagePairs);
 
+      // Haal de ParticipantID uit de URL
+      function getParticipantID() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get("ParticipantID") || "UnknownParticipant";
+      }
+
       // Vraag toestemming voor zowel video als audio, maar demp audio-output
       navigator.mediaDevices
         .getUserMedia({ video: true, audio: true })
@@ -303,7 +309,8 @@
 
       function uploadRecording(blob) {
         const formData = new FormData();
-        formData.append("video", blob, `opname_${Date.now()}.webm`);
+        const participantID = getParticipantID();
+        formData.append("video", blob, `opname_${Date.now()}_${participantID}.webm`);
 
         fetch("upload.php", {
           method: "POST",

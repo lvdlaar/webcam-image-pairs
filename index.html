@@ -135,13 +135,12 @@
 
       <p id="sessionEnd" class="text-success" style="display: none">
         <strong>End of session!</strong>
-        You can close this window and complete the Qualtrics questionaire.
+        You can close this tab and complete the Qualtrics questionnaire.
       </p>
-      <div id="uploadedVideo" style="display: none">
+      <!-- <div id="uploadedVideo" style="display: none">
         <h5 class="mt-4">Recording:</h5>
-        <video id="recordedVideo" controls class="rounded"></video>
-        <!-- Responsieve video -->
-      </div>
+        <video id="recordedVideo" controls class="rounded"></video>        
+      </div> -->
     </div>
 
     <script>
@@ -283,7 +282,7 @@
         const rightImage = document.getElementById("rightImage");
         leftImage.onload = rightImage.onload = () => {
           countdownDisplay.style.display = "flex"; // Toon de timer
-          let countdown = 5;
+          let countdown = 7;
           countdownDisplay.textContent = countdown;
 
           // Toon de labels voor L en R
